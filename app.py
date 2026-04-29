@@ -96,24 +96,22 @@ if st.button("🔍 Predict Employee Status", use_container_width=True):
         'salary': [salary]
     })
 
-for col in ['dept', 'salary']:
+    for col in ['dept', 'salary']:
         data[col] = encoders[col].transform(data[col])
 
-# 👉 Prediction
- prediction = model.predict(data)[0]
+    prediction = model.predict(data)[0]
+    prob = model.predict_proba(data)[0][1]
 
-# 👉 Probability
- prob = model.predict_proba(data)[0][1]
+    st.subheader("📌 Prediction Result")
 
-st.subheader("📌 Prediction Result")
-st.progress(int(prob * 100))
- st.write(f"📊 Risk Score: {prob:.2%}")
-if prediction == 1:
-    st.warning("⚠️ Employee is Likely to Quit")
-    st.info("Recommendation: Consider HR intervention and engagement strategies.")
- else:
+    st.progress(int(prob * 100))
+    st.write(f"📊 Risk Score: {prob:.2%}")
+
+    if prediction == 1:
+        st.warning("⚠️ Employee is Likely to Quit")
+        st.info("Recommendation: Consider HR intervention and engagement strategies.")
+    else:
         st.success("✅ Employee is Not Likely to Quit")
-
 
 # 👉 ADD THIS LINE
 st.progress(int(prob * 100))
