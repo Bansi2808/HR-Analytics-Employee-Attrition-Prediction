@@ -2,6 +2,50 @@ import streamlit as st
 import pandas as pd
 import joblib
 
+
+
+# ------------------ Simple RBAC Login ------------------
+
+import streamlit as st
+
+users = {
+    "admin": {"password": "admin123", "role": "admin"},
+    "user": {"password": "user123", "role": "user"}
+}
+
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+    st.session_state.role = None
+
+if not st.session_state.logged_in:
+    st.title("🔐 Login")
+
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
+
+    if st.button("Login"):
+        if username in users and users[username]["password"] == password:
+            st.session_state.logged_in = True
+            st.session_state.role = users[username]["role"]
+            st.success(f"Logged in as {st.session_state.role}")
+            st.rerun()
+        else:
+            st.error("Invalid credentials")
+
+    st.stop()
+
+model = joblib.load("model.pkl")
+encoders = joblib.load("label_encoders.pkl")
+
+st.title("📊 HR Analytics Prediction App")
+
+st.sidebar.write(f"👤 Role: {st.session_state.role}")
+
+if st.sidebar.button("Logout"):
+    st.session_state.logged_in = False
+    st.session_state.role = None
+    st.rerun()
+
 # ------------------ Page Config ------------------
 st.set_page_config(
     page_title="HR Analytics Prediction",
@@ -85,36 +129,37 @@ st.divider()
 
 # ------------------ Prediction ------------------
 
-if st.button("🔍 Predict Employee Status", use_container_width=True):
+if st.session_state.role in ["admin", "user"]:
 
-    data = pd.DataFrame({
-        'satisfaction_level': [satisfaction_level],
-        'last_evaluation': [last_evaluation],
-        'number_project': [number_projects],
-        'average_montly_hours': [monthly_hours],
-        'time_spend_company': [time_spend_company],
-        'promotion_last_5years': [promotion_last_5years],
-        'dept': [dept],
-        'salary': [salary]
-    })
+    if st.button("🔍 Predict Employee Status", use_container_width=True):
 
-    for col in ['dept', 'salary']:
-        data[col] = encoders[col].transform(data[col])
+        data = pd.DataFrame({
+            'satisfaction_level': [satisfaction_level],
+            'last_evaluation': [last_evaluation],
+            'number_project': [number_projects],
+            'average_montly_hours': [monthly_hours],
+            'time_spend_company': [time_spend_company],
+            'promotion_last_5years': [promotion_last_5years],
+            'dept': [dept],
+            'salary': [salary]
+        })
 
-    prediction = model.predict(data)[0]
-    prob = model.predict_proba(data)[0][1]
+        for col in ['dept', 'salary']:
+            data[col] = encoders[col].transform(data[col])
 
-    st.subheader("📌 Prediction Result")
+        prediction = model.predict(data)[0]
+        prob = model.predict_proba(data)[0][1]
 
-    st.progress(int(prob * 100))
-    st.write(f"📊 Risk Score: {prob:.2%}")
+        st.subheader("📌 Prediction Result")
 
-    if prediction == 1:
-        st.warning("⚠️ Employee is Likely to Quit")
-        st.info("Recommendation: Consider HR intervention and engagement strategies.")
-    else:
-        st.success("✅ Employee is Not Likely to Quit")
+        st.progress(int(prob * 100))
+        st.write(f"📊 Risk Score: {prob:.2%}")
 
+        if prediction == 1:
+            st.warning("⚠️ Employee is Likely to Quit")
+            st.info("Recommendation: Consider HR intervention and engagement strategies.")
+        else:
+            st.success("✅ Employee is Not Likely to Quit")
 # ------------------ Footer ------------------
 st.markdown(
     "<p style='text-align:center; color:gray;'>Built with Streamlit</p>",
