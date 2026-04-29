@@ -7,6 +7,7 @@ st.set_page_config(
     page_title="HR Analytics Prediction",
     page_icon=":alarm_clock:",
     layout="centered"
+
 )
 
 # ------------------ Load Model ------------------
@@ -83,6 +84,7 @@ with col2:
 st.divider()
 
 # ------------------ Prediction ------------------
+
 if st.button("🔍 Predict Employee Status", use_container_width=True):
 
     data = pd.DataFrame({
@@ -112,9 +114,6 @@ if st.button("🔍 Predict Employee Status", use_container_width=True):
         st.info("Recommendation: Consider HR intervention and engagement strategies.")
     else:
         st.success("✅ Employee is Not Likely to Quit")
-
-# 👉 ADD THIS LINE
-prob = model.predict_proba(data)[0][1]
 
 # ------------------ Footer ------------------
 st.markdown(
