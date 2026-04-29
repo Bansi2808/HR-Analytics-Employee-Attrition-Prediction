@@ -114,8 +114,7 @@ if st.button("🔍 Predict Employee Status", use_container_width=True):
         st.success("✅ Employee is Not Likely to Quit")
 
 # 👉 ADD THIS LINE
-st.progress(int(prob * 100))
-st.write(f"📊 Risk Score: {prob:.2%}")
+prob = model.predict_proba(data)[0][1]
 
 # ------------------ Footer ------------------
 st.markdown(
