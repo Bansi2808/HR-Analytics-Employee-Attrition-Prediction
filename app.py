@@ -83,22 +83,36 @@ with col2:
 st.divider()
 
 # ------------------ Prediction ------------------
-prediction = model.predict(data)[0]
+if st.button("🔍 Predict Employee Status", use_container_width=True):
+
+    data = pd.DataFrame({
+        'satisfaction_level': [satisfaction_level],
+        'last_evaluation': [last_evaluation],
+        'number_project': [number_projects],
+        'average_montly_hours': [monthly_hours],
+        'time_spend_company': [time_spend_company],
+        'promotion_last_5years': [promotion_last_5years],
+        'dept': [dept],
+        'salary': [salary]
+    })
+
+for col in ['dept', 'salary']:
+        data[col] = encoders[col].transform(data[col])
+
+# 👉 Prediction
+ prediction = model.predict(data)[0]
 
 # 👉 Probability
-prob = model.predict_proba(data)[0][1]
+ prob = model.predict_proba(data)[0][1]
 
 st.subheader("📌 Prediction Result")
-
-# 👉 Show probability
-st.write(f"📊 Probability of Leaving: {prob:.2f}")
-
-# 👉 Show result
+st.progress(int(prob * 100))
+ st.write(f"📊 Risk Score: {prob:.2%}")
 if prediction == 1:
     st.warning("⚠️ Employee is Likely to Quit")
     st.info("Recommendation: Consider HR intervention and engagement strategies.")
-else:
-    st.success("✅ Employee is Not Likely to Quit")
+ else:
+        st.success("✅ Employee is Not Likely to Quit")
 
 
 # 👉 ADD THIS LINE
