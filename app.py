@@ -110,4 +110,3 @@ st.markdown(
     "<p style='text-align:center; color:gray;'>Built with Streamlit</p>",
     unsafe_allow_html=True
 )
-Built with Streamlit
