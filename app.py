@@ -3,7 +3,7 @@ import pandas as pd
 import joblib
 import bcrypt
 
-# ------------------ Auth Setup ------------------
+# ------------------ AUTH SETUP ------------------
 
 if "users_db" not in st.session_state:
     st.session_state.users_db = {
@@ -17,6 +17,9 @@ if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
     st.session_state.role = None
     st.session_state.username = None
+
+# ------------------ LOGIN / SIGNUP ------------------
+
 menu = st.sidebar.selectbox("Menu", ["Login", "Signup"])
 
 if not st.session_state.logged_in:
@@ -61,6 +64,13 @@ if not st.session_state.logged_in:
 
     st.stop()
 
+# ------------------ LOAD MODEL ------------------
+
+model = joblib.load("model.pkl")
+encoders = joblib.load("label_encoders.pkl")
+
+# ------------------ HEADER ------------------
+
 st.title("📊 HR Analytics Prediction App")
 
 st.sidebar.write(f"👤 User: {st.session_state.username}")
@@ -72,95 +82,15 @@ if st.sidebar.button("Logout"):
     st.session_state.role = None
     st.rerun()
 
-# ------------------ Simple RBAC Login ------------------
+# ------------------ INPUTS ------------------
 
-import streamlit as st
-
-users = {
-    "admin": {"password": "admin123", "role": "admin"},
-    "user": {"password": "user123", "role": "user"}
-}
-
-if "logged_in" not in st.session_state:
-    st.session_state.logged_in = False
-    st.session_state.role = None
-
-if not st.session_state.logged_in:
-    st.title("🔐 Login")
-
-    username = st.text_input("Username")
-    password = st.text_input("Password", type="password")
-
-    if st.button("Login"):
-        if username in users and users[username]["password"] == password:
-            st.session_state.logged_in = True
-            st.session_state.role = users[username]["role"]
-            st.success(f"Logged in as {st.session_state.role}")
-            st.rerun()
-        else:
-            st.error("Invalid credentials")
-
-    st.stop()
-
-model = joblib.load("model.pkl")
-encoders = joblib.load("label_encoders.pkl")
-
-st.title("📊 HR Analytics Prediction App")
-
-st.sidebar.write(f"👤 Role: {st.session_state.role}")
-
-if st.sidebar.button("Logout"):
-    st.session_state.logged_in = False
-    st.session_state.role = None
-    st.rerun()
-
-# ------------------ Page Config ------------------
-st.set_page_config(
-    page_title="HR Analytics Prediction",
-    page_icon=":alarm_clock:",
-    layout="centered"
-
-)
-
-# ------------------ Load Model ------------------
-model = joblib.load("model.pkl")
-encoders = joblib.load("label_encoders.pkl")
-
-# ------------------ Header ------------------
-st.markdown(
-    """
-    <h1 style='text-align: center;'>📊 HR Analytics Prediction App </h1>
-    <p style='text-align: center; color: gray;'>
-    Predict whether an employee is likely to leave the company or not
-    </p>
-    """,
-    unsafe_allow_html=True
-)
-
-st.divider()
-
-# ------------------ Sidebar Inputs ------------------
 st.sidebar.header("🔧 Employee Details")
 
-satisfaction_level = st.sidebar.slider(
-    "Satisfaction Level", 0.0, 1.0, 0.5, 0.01
-)
-
-last_evaluation = st.sidebar.slider(
-    "Last Evaluation Score", 0.0, 1.0, 0.5, 0.01
-)
-
-number_projects = st.sidebar.slider(
-    "Number of Projects", 1, 10, 3
-)
-
-monthly_hours = st.sidebar.slider(
-    "Average Monthly Hours", 50, 350, 160, 10
-)
-
-time_spend_company = st.sidebar.slider(
-    "Years in Company", 1, 10, 3
-)
+satisfaction_level = st.sidebar.slider("Satisfaction Level", 0.0, 1.0, 0.5, 0.01)
+last_evaluation = st.sidebar.slider("Last Evaluation Score", 0.0, 1.0, 0.5, 0.01)
+number_projects = st.sidebar.slider("Number of Projects", 1, 10, 3)
+monthly_hours = st.sidebar.slider("Average Monthly Hours", 50, 350, 160, 10)
+time_spend_company = st.sidebar.slider("Years in Company", 1, 10, 3)
 
 promotion_last_5years = st.sidebar.radio(
     "Promotion in Last 5 Years",
@@ -176,7 +106,8 @@ salary = st.sidebar.selectbox(
     "Salary Bracket", encoders['salary'].classes_.tolist()
 )
 
-# ------------------ Main Section ------------------
+# ------------------ DISPLAY INPUT ------------------
+
 st.subheader("📋 Review Employee Information")
 
 col1, col2 = st.columns(2)
@@ -195,7 +126,7 @@ with col2:
 
 st.divider()
 
-# ------------------ Prediction ------------------
+# ------------------ PREDICTION ------------------
 
 if st.button("🔍 Predict Employee Status", use_container_width=True):
 
@@ -226,7 +157,9 @@ if st.button("🔍 Predict Employee Status", use_container_width=True):
         st.info("Recommendation: Consider HR intervention and engagement strategies.")
     else:
         st.success("✅ Employee is Not Likely to Quit")
-# ------------------ Footer ------------------
+
+# ------------------ FOOTER ------------------
+
 st.markdown(
     "<p style='text-align:center; color:gray;'>Built with Streamlit</p>",
     unsafe_allow_html=True
